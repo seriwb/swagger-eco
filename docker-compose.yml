@@ -1,0 +1,53 @@
+version: '2'
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - 80:80
+    volumes:
+      - ./public:/usr/share/nginx/html
+      - ./docs:/usr/share/nginx/html/docs
+#      - ./nginx-swagger.conf:/etc/nginx/conf.d/nginx-swagger.conf.template:ro
+#    environment:
+#      SWAGGER_HOSTS: localhost
+#    command: /bin/sh -c "envsubst '$$SWAGGER_HOSTS' < /etc/nginx/conf.d/nginx-swagger.conf.template > /etc/nginx/conf.d/nginx-swagger.conf && nginx -g 'daemon off;'"
+
+  editor:
+    image: swaggerapi/swagger-editor
+    ports:
+      - 18080:8080
+
+  generator:
+    image: swaggerapi/swagger-generator
+    environment:
+      GENERATOR_HOST: http://generator
+    ports:
+      - 18081:8080
+
+  codegen-cli:
+    image: swaggerapi/swagger-codegen-cli
+    volumes:
+      - ./specification:/codegen-cli/specification
+      - ./codegen:/codegen-cli/codegen
+    command: generate -i /codegen-cli/specification/swagger.yaml -l ruby -o /codegen-cli/codegen/ruby
+
+# Swagger Petstoreとかいうデフォルトのサンプルが開く
+#  ui:
+#    image: swaggerapi/swagger-ui
+#    ports:
+#      - 18082:8080
+
+# カスタマイズするswagger-ui
+  ui-builder:
+    build: swagger-ui
+    ports:
+      - 18083:8080
+    volumes:
+      - ./specification:/usr/share/nginx/html/specification:ro
+
+  html-convertor:
+    build: html-convertor
+    tty: true
+    volumes:
+      - ./docs:/html-convertor/docs
+      - ./specification:/html-convertor/specification:ro

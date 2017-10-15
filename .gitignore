@@ -1,0 +1,4 @@
+/codegen/*
+!/codegen/.keep
+/public/docs/
+/public/rin/bootstrap.html
